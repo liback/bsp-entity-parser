@@ -10,6 +10,14 @@
 char* extractMapName(char line[]);
 void stripBadChars(char string[]);
 
+enum mods {
+	MOD_DM,
+	MOD_CTF,
+	MOD_TF
+};
+
+const char* mod_names[] = { "dm", "ctf", "tf" };
+
 /*
 Replaces the dot of the filename with NULL
 and returns the new, file-extension-less string.
@@ -101,6 +109,9 @@ int main(int argc, char **argv)
 	char *mapName;
 	char *map;
 
+	// DM is standard MOD if nothing else found
+	int mod = MOD_DM;
+
 	// Entity counters
 	int numSSG	= 0;
 	int numNG	= 0;
@@ -170,6 +181,9 @@ int main(int argc, char **argv)
 	const char STRING_SPAWNFLAG_1[19]		= "\"spawnflags\" \"1\"";
 	const char STRING_SPAWNFLAG_2[19]		= "\"spawnflags\" \"2\"";
 	
+	const char STRING_MOD_CTF[29]	=	"\"classname\" \"item_flag_team1\"";
+	const char STRING_MOD_TF[25]	=	"\"classname\" \"item_tfgoal\"";
+
 	// Used to check file extensions
 	char *fileExtension;
 	const char dot = '.';
@@ -196,7 +210,7 @@ int main(int argc, char **argv)
 	}
 
 	// Print headers in output file
-	fprintf(common_file, "Map|Map description|numSSG|numNG|numSNG|numGL|numRL|numLG|numShellsSmall|numShellsBig|numNailsSmall|numNailsBig|numCellsSmall|numCellsBig|numRocketsSmall|numRocketsBig|numHealthSmall|numHealthBig|numMegaHealth|numGA|numYA|numRA|numQuads|numRings|numPents|numEnviroSuits|numSpawns|numTeleports|numSecrets|numSecretDoors\n");
+	fprintf(common_file, "Map|Map description|mod|numSSG|numNG|numSNG|numGL|numRL|numLG|numShellsSmall|numShellsBig|numNailsSmall|numNailsBig|numCellsSmall|numCellsBig|numRocketsSmall|numRocketsBig|numHealthSmall|numHealthBig|numMegaHealth|numGA|numYA|numRA|numQuads|numRings|numPents|numEnviroSuits|numSpawns|numTeleports|numSecrets|numSecretDoors\n");
 
 	while ((in_file = readdir(FD))) {
 		// Skip unix folder names
@@ -359,15 +373,20 @@ int main(int argc, char **argv)
 
 					if (strstr(buffer, STRING_SPAWNFLAG_1)) 		{ curSpawnflag = 1; }
 					if (strstr(buffer, STRING_SPAWNFLAG_2)) 		{ curSpawnflag = 2; }
+
+					// Default mod is 0 = DM
+					if (strstr(buffer, STRING_MOD_TF)) 	{ mod = MOD_TF; }
+					if (strstr(buffer, STRING_MOD_CTF)) { mod = MOD_CTF; }
 				}
 			}
 		}
 
 		map = stripFileExtension(in_file->d_name);
 
-		fprintf(common_file, "%s|%s|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i\n", 
+		fprintf(common_file, "%s|%s|%s|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i\n", 
 			map,
-			mapName, 
+			mapName,
+			mod_names[mod], 
 			numSSG, 
 			numNG, 
 			numSNG, 
@@ -405,7 +424,7 @@ int main(int argc, char **argv)
 		free(map);
 		free(mapName);
 		mapName = NULL;
-		numSSG = numNG = numSNG = numGL = numRL = numLG = numShellsSmall = numShellsBig = numNailsSmall = numNailsBig = numCellsSmall = numCellsBig = numRocketsSmall = numRocketsBig = numHealthSmall = numHealthBig = numMegaHealth = numGA = numYA = numRA = numQuads = numRings = numPents = numEnviroSuits = numSpawns = numTeleports = numSecrets = numSecretDoors = 0;
+		mod = numSSG = numNG = numSNG = numGL = numRL = numLG = numShellsSmall = numShellsBig = numNailsSmall = numNailsBig = numCellsSmall = numCellsBig = numRocketsSmall = numRocketsBig = numHealthSmall = numHealthBig = numMegaHealth = numGA = numYA = numRA = numQuads = numRings = numPents = numEnviroSuits = numSpawns = numTeleports = numSecrets = numSecretDoors = 0;
 	}
 
 	fclose(common_file);
