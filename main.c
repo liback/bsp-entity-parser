@@ -158,15 +158,13 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (common_file == NULL)
-	{
+	if (common_file == NULL) {
 		fprintf(stderr, "Error: Failed to open common_file - %s\n", strerror(errno));
 
 		return 1;
 	}
 
-	if (NULL == (FD = opendir (argv[1])))
-	{
+	if (NULL == (FD = opendir (argv[1]))) {
 		fprintf(stderr, "Error: Failed to open input directory (%s) - %s\n", argv[1], strerror(errno));
 		fclose(common_file);
 
@@ -176,8 +174,7 @@ int main(int argc, char **argv)
 	// Print headers in output file
 	fprintf(common_file, "Map|Map description|numSSG|numNG|numSNG|numGL|numRL|numLG|numShellsSmall|numShellsBig|numNailsSmall|numNailsBig|numCellsSmall|numCellsBig|numRocketsSmall|numRocketsBig|numHealthSmall|numHealthBig|numMegaHealth|numGA|numYA|numRA|numQuads|numRings|numPents|numEnviroSuits|numSpawns|numTeleports|numSecrets|numSecretDoors\n");
 
-	while ((in_file = readdir(FD)))
-	{
+	while ((in_file = readdir(FD))) {
 		// Skip unix folder names
 		if (!strcmp(in_file->d_name, "."))
 			continue;
@@ -194,8 +191,7 @@ int main(int argc, char **argv)
 		sprintf(fullpath, "%s/%s", argv[1], in_file->d_name);
 
 		entry_file = fopen(fullpath, "rw");
-		if (entry_file == NULL)
-		{
+		if (entry_file == NULL) {
 			fprintf(stderr, "Error : Failed to open entry file (%s) - %s\n", in_file->d_name, strerror(errno));
 			fclose(common_file);
 
@@ -386,6 +382,5 @@ int main(int argc, char **argv)
 	}
 
 	fclose(common_file);
-
 }
 
