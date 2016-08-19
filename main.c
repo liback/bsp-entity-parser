@@ -10,6 +10,29 @@
 char* extractMapName(char line[]);
 void stripBadChars(char string[]);
 
+/*
+Replaces the dot of the filename with NULL
+and returns the new, file-extension-less string.
+ */
+char *stripFileExtension(char* filename) 
+{
+	char *retstr;
+	char *lastdot;
+
+	if (filename == NULL)
+		return NULL;
+
+	if ((retstr = malloc(strlen(filename) + 1)) == NULL)
+		return NULL;
+
+	strcpy(retstr,filename);
+	lastdot = strrchr(retstr, '.');
+	if (lastdot != NULL)
+		*lastdot = '\0';
+
+	return retstr;
+}
+
 char* extractMapName(char line[]) 
 {
 	char seps[] = "\"";
@@ -76,6 +99,7 @@ int main(int argc, char **argv)
 	char buffer[BUFSIZ];
 
 	char *mapName;
+	char *map;
 
 	// Entity counters
 	int numSSG	= 0;
@@ -339,8 +363,10 @@ int main(int argc, char **argv)
 			}
 		}
 
+		map = stripFileExtension(in_file->d_name);
+
 		fprintf(common_file, "%s|%s|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i\n", 
-			in_file->d_name,
+			map,
 			mapName, 
 			numSSG, 
 			numNG, 
@@ -376,6 +402,7 @@ int main(int argc, char **argv)
 		fclose(entry_file);
 
 		// Reset counters for next map file
+		free(map);
 		free(mapName);
 		mapName = NULL;
 		numSSG = numNG = numSNG = numGL = numRL = numLG = numShellsSmall = numShellsBig = numNailsSmall = numNailsBig = numCellsSmall = numCellsBig = numRocketsSmall = numRocketsBig = numHealthSmall = numHealthBig = numMegaHealth = numGA = numYA = numRA = numQuads = numRings = numPents = numEnviroSuits = numSpawns = numTeleports = numSecrets = numSecretDoors = 0;
