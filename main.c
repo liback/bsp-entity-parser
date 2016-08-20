@@ -182,7 +182,7 @@ int main(int argc, char **argv)
 	const char STRING_SPAWNFLAG_2[19]		= "\"spawnflags\" \"2\"";
 	
 	const char STRING_MOD_CTF[29]	=	"\"classname\" \"item_flag_team1\"";
-	const char STRING_MOD_TF[25]	=	"\"classname\" \"item_tfgoal\"";
+	const char STRING_MOD_TF[27]	=	"\"classname\" \"info_tfdetect\"";
 
 	// Used to check file extensions
 	char *fileExtension;
