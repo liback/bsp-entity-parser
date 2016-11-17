@@ -249,139 +249,128 @@ int main(int argc, char **argv)
 		
 		int curSpawnflag = 0;
 
-		// We don't bother checking the content
-		// until we reach the worldspawn entity...
-		bool isBelowJunkChars = 0;
-
 		// 
 		bool foundOpenTag = 0;
 
 		// fgets reads a line at a time and places result in buffer
 		while (fgets(buffer, BUFSIZ, entry_file) != NULL) {
 
-			// Can occur before the worldspawn tag, so until there's a 
-			// nicer way of structuring all this, we do this check here...
+			// Check for map name
 			if (mapName == NULL && (strncmp(buffer, STRING_MESSAGE, 9) == 0)) {
 				mapName = extractMapName(buffer);
 
 				stripBadChars(mapName);
 			}
 
-			if (isBelowJunkChars == 0) {
-				if (strstr(buffer, "\"classname\" \"worldspawn\"")) {
-					isBelowJunkChars = 1;
+			// We found an entity opening tag
+			if (strcmp(buffer, "{\n") == 0) {
+				foundOpenTag = 1;
+
+			// We found an entity closening tag,
+			// increment what we have found
+			} else if ((strcmp(buffer, "}\n") == 0) && foundOpenTag == 1) {
+				
+				// Shells
+				if (curItemIsShells) {
+					
+					if (curSpawnflag == 0) {
+						numShellsSmall++;
+					} else {
+						numShellsBig++;
+					}
+					curItemIsShells = 0;
 				}
+
+				// Nails
+				if (curItemIsNails) {
+					if (curSpawnflag == 0) {
+						numNailsBig++;
+					} else {
+						numNailsSmall++;
+					}
+					curItemIsNails = 0;
+				}
+
+				// Rockets
+				if (curItemIsRockets) {
+					if (curSpawnflag == 0) {
+						numRocketsSmall++;
+					} else {
+						numRocketsBig++;
+					}
+					curItemIsRockets = 0;
+				}
+
+				// Cells
+				if (curItemIsCells) {
+					if (curSpawnflag == 0) {
+						numCellsSmall++;
+					} else {
+						numCellsBig++;
+					}
+					curItemIsCells = 0;
+				}
+
+				// Health (incl. mega)
+				if (curItemIsHealth) {
+					if (curSpawnflag == 0) {
+						numHealthBig++;
+					} else if (curSpawnflag == 1) {
+						numHealthSmall++;
+					} else {
+						numMegaHealth++;
+					}
+					curItemIsHealth = 0;
+				}
+
+				curSpawnflag = 0;
+				foundOpenTag = 0;
 			} else {
 				
-				// We found an entity opening tag
-				if (strcmp(buffer, "{\n") == 0) {
-					foundOpenTag = 1;
+				// Weapons, armors, powerups and spawns are straight forward, just match and increment
+				if (strstr(buffer, STRING_WEAPON_SSG)) 	{ numSSG++; }
+				if (strstr(buffer, STRING_WEAPON_NG)) 	{ numNG++; }
+				if (strstr(buffer, STRING_WEAPON_SNG)) 	{ numSNG++; }
+				if (strstr(buffer, STRING_WEAPON_GL)) 	{ numGL++; }
+				if (strstr(buffer, STRING_WEAPON_RL)) 	{ numRL++; }
+				if (strstr(buffer, STRING_WEAPON_LG)) 	{ numLG++; }
 
-				// We found an entity closening tag,
-				// increment what we have found
-				} else if ((strcmp(buffer, "}\n") == 0) && foundOpenTag == 1) {
-					
-					// Shells
-					if (curItemIsShells) {
-						
-						if (curSpawnflag == 0) {
-							numShellsSmall++;
-						} else {
-							numShellsBig++;
-						}
-						curItemIsShells = 0;
-					}
+				if (strstr(buffer, STRING_ARMOR_GA)) 	{ numGA++; }
+				if (strstr(buffer, STRING_ARMOR_YA)) 	{ numYA++; }
+				if (strstr(buffer, STRING_ARMOR_RA)) 	{ numRA++; }
 
-					// Nails
-					if (curItemIsNails) {
-						if (curSpawnflag == 0) {
-							numNailsBig++;
-						} else {
-							numNailsSmall++;
-						}
-						curItemIsNails = 0;
-					}
+				if (strstr(buffer, STRING_POWERUP_QUAD)) 	{ numQuads++; }
+				if (strstr(buffer, STRING_POWERUP_RING)) 	{ numRings++; }
+				if (strstr(buffer, STRING_POWERUP_PENT)) 	{ numPents++; }
 
-					// Rockets
-					if (curItemIsRockets) {
-						if (curSpawnflag == 0) {
-							numRocketsSmall++;
-						} else {
-							numRocketsBig++;
-						}
-						curItemIsRockets = 0;
-					}
+				if (strstr(buffer, STRING_ENVIRO_SUIT)) 	{ numEnviroSuits++; }
+				
+				if (strstr(buffer, STRING_DM_SPAWN)) 	{ numSpawns++; }
+				if (strstr(buffer, STRING_TELEPORT)) 	{ numTeleports++; }
+				if (strstr(buffer, STRING_SECRET)) 		{ numSecrets++; }
+				if (strstr(buffer, STRING_SECRET_DOOR)) { numSecretDoors++; }
+				
+				// Some item has spawn flags that we need to read before
+				// we decide the size of the ammo/health pack. So for now
+				// we just remember that previous line was such a pack
+				// and check if next line increases the size.
+				if (strstr(buffer, STRING_ITEM_AMMO_SHELLS)) 	{ curItemIsShells = 1; }
+				if (strstr(buffer, STRING_ITEM_AMMO_NAILS)) 	{ curItemIsNails = 1; }
+				if (strstr(buffer, STRING_ITEM_AMMO_CELLS)) 	{ curItemIsCells = 1; }
+				if (strstr(buffer, STRING_ITEM_AMMO_RL)) 		{ curItemIsRockets = 1; }
+				if (strstr(buffer, STRING_ITEM_HEALTH)) 		{ curItemIsHealth = 1; }
 
-					// Cells
-					if (curItemIsCells) {
-						if (curSpawnflag == 0) {
-							numCellsSmall++;
-						} else {
-							numCellsBig++;
-						}
-						curItemIsCells = 0;
-					}
+				if (strstr(buffer, STRING_SPAWNFLAG_1)) 		{ curSpawnflag = 1; }
+				if (strstr(buffer, STRING_SPAWNFLAG_2)) 		{ curSpawnflag = 2; }
 
-					// Health (incl. mega)
-					if (curItemIsHealth) {
-						if (curSpawnflag == 0) {
-							numHealthBig++;
-						} else if (curSpawnflag == 1) {
-							numHealthSmall++;
-						} else {
-							numMegaHealth++;
-						}
-						curItemIsHealth = 0;
-					}
-
-					curSpawnflag = 0;
-					foundOpenTag = 0;
-				} else {
-					
-					// Weapons, armors, powerups and spawns are straight forward, just match and increment
-					if (strstr(buffer, STRING_WEAPON_SSG)) 	{ numSSG++; }
-					if (strstr(buffer, STRING_WEAPON_NG)) 	{ numNG++; }
-					if (strstr(buffer, STRING_WEAPON_SNG)) 	{ numSNG++; }
-					if (strstr(buffer, STRING_WEAPON_GL)) 	{ numGL++; }
-					if (strstr(buffer, STRING_WEAPON_RL)) 	{ numRL++; }
-					if (strstr(buffer, STRING_WEAPON_LG)) 	{ numLG++; }
-
-					if (strstr(buffer, STRING_ARMOR_GA)) 	{ numGA++; }
-					if (strstr(buffer, STRING_ARMOR_YA)) 	{ numYA++; }
-					if (strstr(buffer, STRING_ARMOR_RA)) 	{ numRA++; }
-
-					if (strstr(buffer, STRING_POWERUP_QUAD)) 	{ numQuads++; }
-					if (strstr(buffer, STRING_POWERUP_RING)) 	{ numRings++; }
-					if (strstr(buffer, STRING_POWERUP_PENT)) 	{ numPents++; }
-
-					if (strstr(buffer, STRING_ENVIRO_SUIT)) 	{ numEnviroSuits++; }
-					
-					if (strstr(buffer, STRING_DM_SPAWN)) 	{ numSpawns++; }
-					if (strstr(buffer, STRING_TELEPORT)) 	{ numTeleports++; }
-					if (strstr(buffer, STRING_SECRET)) 		{ numSecrets++; }
-					if (strstr(buffer, STRING_SECRET_DOOR)) { numSecretDoors++; }
-					
-					// Some item has spawn flags that we need to read before
-					// we decide the size of the ammo/health pack. So for now
-					// we just remember that previous line was such a pack
-					// and check if next line increases the size.
-					if (strstr(buffer, STRING_ITEM_AMMO_SHELLS)) 	{ curItemIsShells = 1; }
-					if (strstr(buffer, STRING_ITEM_AMMO_NAILS)) 	{ curItemIsNails = 1; }
-					if (strstr(buffer, STRING_ITEM_AMMO_CELLS)) 	{ curItemIsCells = 1; }
-					if (strstr(buffer, STRING_ITEM_AMMO_RL)) 		{ curItemIsRockets = 1; }
-					if (strstr(buffer, STRING_ITEM_HEALTH)) 		{ curItemIsHealth = 1; }
-
-					if (strstr(buffer, STRING_SPAWNFLAG_1)) 		{ curSpawnflag = 1; }
-					if (strstr(buffer, STRING_SPAWNFLAG_2)) 		{ curSpawnflag = 2; }
-
-					// Default mod is 0 = DM
-					// If we already found the mod to be TF we leave it at that...
-					if (mod != MOD_TF) {
-						if (strstr(buffer, STRING_MOD_TF)) 	{ mod = MOD_TF; }
-						if (strstr(buffer, STRING_MOD_CTF)) { mod = MOD_CTF; }
-					}
+				// Default mod is 0 = DM
+				// If we already found the mod to be TF we leave it at that...
+				if (mod != MOD_TF) {
+					if (strstr(buffer, STRING_MOD_TF)) 	{ mod = MOD_TF; }
+					if (strstr(buffer, STRING_MOD_CTF)) { mod = MOD_CTF; }
 				}
 			}
+			
 		}
 
 		map = stripFileExtension(in_file->d_name);
