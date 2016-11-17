@@ -146,6 +146,8 @@ int main(int argc, char **argv)
 	int numSecrets 		= 0;
 	int numSecretDoors	= 0;
 
+	int mapCount 		= 0;
+
 	const char STRING_MESSAGE[9]			= "\"message\"";
 
 	// Entity strings to match
@@ -237,6 +239,7 @@ int main(int argc, char **argv)
 		}
 
 		// If we ended up here we managed to open the file
+		mapCount++;
 		printf("Reading: %s\n", fullpath);
 
 		// Need to keep track of these as we can't increment
@@ -420,5 +423,6 @@ int main(int argc, char **argv)
 	}
 
 	fclose(common_file);
+	printf("Finished reading %i files.\n", mapCount);
 }
 
