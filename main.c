@@ -375,8 +375,11 @@ int main(int argc, char **argv)
 					if (strstr(buffer, STRING_SPAWNFLAG_2)) 		{ curSpawnflag = 2; }
 
 					// Default mod is 0 = DM
-					if (strstr(buffer, STRING_MOD_TF)) 	{ mod = MOD_TF; }
-					if (strstr(buffer, STRING_MOD_CTF)) { mod = MOD_CTF; }
+					// If we already found the mod to be TF we leave it at that...
+					if (mod != MOD_TF) {
+						if (strstr(buffer, STRING_MOD_TF)) 	{ mod = MOD_TF; }
+						if (strstr(buffer, STRING_MOD_CTF)) { mod = MOD_CTF; }
+					}
 				}
 			}
 		}
